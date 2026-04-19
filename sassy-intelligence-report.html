@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Churn Risk Signals — Orbit Customer Intelligence Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ultra&family=Questrial&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:    #0c0c0c;
+  --dark:     #111111;
+  --dark2:    #161616;
+  --dark3:    #1a1a1a;
+  --orange:   #ff5400;
+  --orange-dim: rgba(255,84,0,0.1);
+  --orange-faint: rgba(255,84,0,0.06);
+  --white:    #FAFAF8;
+  --w80:      rgba(250,250,248,0.80);
+  --w50:      rgba(250,250,248,0.50);
+  --w20:      rgba(250,250,248,0.20);
+  --w10:      rgba(250,250,248,0.10);
+  --w06:      rgba(250,250,248,0.06);
+  --border:   rgba(255,84,0,0.2);
+  --mono:     'DM Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Questrial', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255,84,0,0.2) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.08) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.06) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, rgba(255,84,0,0.12) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.06) 0%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 48px;
+  background: rgba(12,12,12,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--w10);
+}
+.nav-logo { font-family: 'Ultra', serif; font-size: 17px; color: var(--white); }
+.nav-logo span { color: var(--orange); }
+.nav-meta { display: flex; align-items: center; gap: 32px; }
+.nav-meta a {
+  color: var(--w50); text-decoration: none;
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  transition: color 0.2s; cursor: pointer;
+}
+.nav-meta a:hover, .nav-meta a.active { color: var(--orange); }
+.nav-pill {
+  background: var(--orange); color: var(--black);
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 8px 16px; border-radius: 2px; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.nav-pill:hover { opacity: 0.85; }
+
+/* ── PROGRESS ── */
+#progress-bar {
+  position: fixed; top: 0; left: 0;
+  height: 2px; background: var(--orange);
+  z-index: 200; width: 0%; transition: width 0.1s linear;
+}
+
+/* ── LAYOUT ── */
+main { position: relative; z-index: 1; padding-top: 80px; }
+section { max-width: 1100px; margin: 0 auto; padding: 80px 48px; }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding-top: 120px; padding-bottom: 80px;
+  position: relative; overflow: hidden;
+}
+#hero::after {
+  content: '';
+  position: absolute; right: -100px; top: 50%;
+  transform: translateY(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(255,84,0,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 32px;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s;
+}
+.hero-eyebrow-line { width: 40px; height: 1px; background: var(--orange); }
+.hero-eyebrow-text { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); }
+.hero-title {
+  font-family: 'Ultra', serif;
+  font-size: clamp(38px, 5.5vw, 68px);
+  line-height: 1.08; font-weight: 400;
+  max-width: 780px; margin-bottom: 24px;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s;
+}
+.hero-title em { font-style: normal; color: var(--orange); }
+.hero-subtitle {
+  font-size: 18px; color: var(--w80);
+  max-width: 560px; line-height: 1.7; margin-bottom: 48px;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s;
+}
+.hero-meta-row {
+  display: flex; gap: 40px; flex-wrap: wrap;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s;
+}
+.hero-meta-item { display: flex; flex-direction: column; gap: 4px; }
+.hero-meta-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--w50); }
+.hero-meta-value { font-size: 15px; color: var(--w80); }
+
+/* ── SIGNAL STRIP ── */
+.signal-strip {
+  background: var(--dark3); border: 1px solid var(--border);
+  border-radius: 2px; padding: 32px 40px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  margin-bottom: 0;
+  opacity: 0; animation: fadeUp 0.8s ease forwards 1s;
+}
+.signal-item {
+  padding: 0 32px; border-right: 1px solid var(--w10);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.signal-item:first-child { padding-left: 0; }
+.signal-item:last-child { border-right: none; }
+.signal-number { font-family: 'Ultra', serif; font-size: 40px; line-height: 1; color: var(--white); font-weight: 400; }
+.signal-number sup { font-family: 'Questrial', sans-serif; font-size: 20px; color: var(--orange); vertical-align: super; }
+.signal-label { font-size: 13px; color: var(--w50); line-height: 1.4; }
+.signal-dot {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--orange);
+}
+.signal-dot::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--orange); border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ── SECTION HEADERS ── */
+.section-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.section-eyebrow-line { width: 32px; height: 1px; background: var(--orange); }
+.section-eyebrow-text { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); }
+.section-title {
+  font-family: 'Ultra', serif;
+  font-size: clamp(28px, 3.5vw, 46px); font-weight: 400;
+  line-height: 1.1; margin-bottom: 20px;
+}
+.section-title em { font-style: normal; color: var(--orange); }
+.section-intro { font-size: 18px; color: var(--w80); max-width: 680px; line-height: 1.7; margin-bottom: 48px; }
+
+/* ── SUMMARY ── */
+#summary { background: var(--dark); max-width: 100%; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 80px 0; }
+#summary > div { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 40px; }
+.summary-profile { background: var(--dark3); border: 1px solid var(--border); border-radius: 2px; padding: 36px; }
+.summary-profile-title { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 20px; }
+.profile-trait { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--w06); }
+.profile-trait:last-child { border-bottom: none; }
+.trait-icon { width: 8px; height: 8px; background: var(--orange); border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+.trait-text { font-size: 15px; color: var(--w80); line-height: 1.6; }
+.summary-closer {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(255,84,0,0.1) 0%, rgba(255,84,0,0.03) 100%);
+  border: 1px solid var(--border); border-radius: 2px; padding: 40px 48px; text-align: center;
+}
+.summary-closer p { font-family: 'Ultra', serif; font-size: 22px; line-height: 1.5; color: var(--white); max-width: 700px; margin: 0 auto; font-weight: 400; }
+.summary-closer p strong { color: var(--orange); font-weight: 400; }
+
+/* ── TABS ── */
+.tab-nav {
+  display: flex; gap: 4px; margin-bottom: 32px;
+  background: var(--dark3); padding: 6px; border-radius: 2px;
+  width: fit-content; border: 1px solid var(--w10);
+}
+.tab-btn {
+  background: none; border: none; color: var(--w50);
+  font-family: 'Questrial', sans-serif; font-size: 13px;
+  padding: 10px 20px; border-radius: 2px; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap; letter-spacing: 0.04em;
+}
+.tab-btn:hover { color: var(--w80); }
+.tab-btn.active { background: var(--orange); color: var(--black); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── INSIGHT CARDS ── */
+.insight-card {
+  background: var(--dark3); border: 1px solid var(--w10);
+  border-radius: 2px; overflow: hidden; margin-bottom: 12px;
+  transition: border-color 0.25s;
+}
+.insight-card:hover { border-color: var(--border); }
+.insight-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 28px 32px; cursor: pointer; gap: 24px;
+}
+.insight-card-left { display: flex; gap: 20px; align-items: flex-start; flex: 1; }
+.insight-number { font-family: var(--mono); font-size: 12px; color: var(--orange); opacity: 0.7; margin-top: 4px; flex-shrink: 0; }
+.insight-card-title { font-size: 18px; line-height: 1.35; color: var(--white); }
+.insight-toggle {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--w06); border: 1px solid var(--w10);
+  color: var(--w50); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s; font-size: 16px; line-height: 1;
+}
+.insight-card.open .insight-toggle {
+  background: var(--orange-dim); border-color: var(--border);
+  color: var(--orange); transform: rotate(45deg);
+}
+.insight-card-body { display: none; padding: 0 32px 32px 72px; }
+.insight-card.open .insight-card-body { display: block; }
+.insight-body-text { font-size: 15px; color: var(--w80); line-height: 1.75; margin-bottom: 24px; }
+
+.customer-quote {
+  background: var(--orange-faint); border-left: 3px solid var(--orange);
+  border-radius: 0 2px 2px 0; padding: 16px 20px; margin: 16px 0;
+  font-size: 14px; font-style: italic; color: var(--w80); line-height: 1.7;
+}
+.customer-quote-id { display: block; margin-top: 8px; font-size: 11px; font-style: normal; color: var(--orange); letter-spacing: 0.06em; }
+
+.insight-reveals { background: rgba(255,255,255,0.03); border-radius: 2px; padding: 20px 24px; margin-top: 20px; }
+.reveals-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+.reveals-text { font-size: 14px; color: var(--w80); line-height: 1.65; font-style: italic; }
+
+/* ── ACTION BLOCK ── */
+.action-block {
+  background: linear-gradient(135deg, rgba(255,84,0,0.1) 0%, rgba(255,84,0,0.03) 100%);
+  border: 1px solid var(--border); border-radius: 2px; padding: 32px 36px;
+  margin-top: 32px; display: flex; gap: 24px; align-items: flex-start;
+}
+.action-icon {
+  width: 40px; height: 40px; background: var(--orange); border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 18px; color: var(--black);
+}
+.action-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+.action-title { font-size: 16px; margin-bottom: 10px; color: var(--white); }
+.action-text { font-size: 14px; color: var(--w80); line-height: 1.65; margin-bottom: 16px; }
+.action-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--orange); color: var(--black);
+  font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 10px 20px; border-radius: 2px; cursor: pointer; border: none;
+  font-family: 'Questrial', sans-serif; transition: opacity 0.2s;
+}
+.action-btn:hover { opacity: 0.85; }
+.action-btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--w80);
+  font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 10px 20px; border-radius: 2px; cursor: pointer;
+  border: 1px solid var(--w20); font-family: 'Questrial', sans-serif;
+  transition: all 0.2s; margin-left: 10px;
+}
+.action-btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
+
+/* ── DATA SECTION ── */
+#data { background: var(--dark); max-width: 100%; border-top: 1px solid var(--border); padding: 80px 0; }
+#data > div { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+.chart-card { background: var(--dark3); border: 1px solid var(--w10); border-radius: 2px; padding: 28px; }
+.chart-card-title { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--w50); margin-bottom: 24px; }
+
+.bar-chart { display: flex; flex-direction: column; gap: 12px; }
+.bar-row { display: flex; align-items: center; gap: 14px; }
+.bar-label { font-size: 13px; color: var(--w80); width: 120px; flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; height: 10px; background: var(--w06); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; background: var(--orange); width: 0%; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+.bar-value { font-size: 13px; color: var(--orange); width: 40px; text-align: left; font-family: var(--mono); }
+
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 1px; background: linear-gradient(to bottom, var(--orange), rgba(255,84,0,0.1)); }
+.timeline-item { position: relative; margin-bottom: 28px; padding-left: 24px; }
+.timeline-item::before { content: ''; position: absolute; left: -17px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--orange); border: 2px solid var(--dark3); }
+.timeline-time { font-size: 11px; letter-spacing: 0.1em; color: var(--orange); text-transform: uppercase; margin-bottom: 4px; }
+.timeline-text { font-size: 14px; color: var(--w80); line-height: 1.6; }
+
+/* ── PROFILES ── */
+#profiles > div { max-width: 1100px; margin: 0 auto; padding: 80px 48px; }
+.profiles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
+.profile-card {
+  background: var(--dark3); border: 1px solid var(--w10);
+  border-radius: 2px; padding: 24px; transition: all 0.25s; cursor: pointer;
+}
+.profile-card:hover { border-color: var(--border); transform: translateY(-2px); }
+.profile-card.highlight { border-color: var(--orange); background: linear-gradient(135deg, rgba(255,84,0,0.08) 0%, var(--dark3) 100%); }
+.profile-id { font-family: var(--mono); font-size: 12px; color: var(--orange); margin-bottom: 8px; }
+.profile-archetype { font-size: 15px; margin-bottom: 12px; color: var(--white); }
+.profile-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.tag { font-size: 11px; padding: 4px 10px; border-radius: 2px; border: 1px solid var(--w20); color: var(--w80); letter-spacing: 0.04em; }
+.tag.orange { border-color: var(--border); color: var(--orange); background: var(--orange-dim); }
+.tag.warm { border-color: rgba(255,180,80,0.3); color: rgba(255,200,120,0.9); background: rgba(255,180,80,0.08); }
+.profile-energy-bar { margin-top: 12px; }
+.profile-energy-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--w50); margin-bottom: 6px; }
+.profile-energy-track { height: 4px; background: var(--w06); border-radius: 2px; overflow: hidden; }
+.profile-energy-fill { height: 100%; border-radius: 2px; transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
+
+/* ── CANDIDACY ── */
+#candidacy { background: var(--black); max-width: 100%; border-top: 1px solid var(--border); padding: 0; }
+#candidacy > div { max-width: 1100px; margin: 0 auto; padding: 80px 48px; }
+.candidacy-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: start; margin-top: 40px; }
+.criteria-list { list-style: none; }
+.criteria-item { display: flex; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--w06); }
+.criteria-item:last-child { border-bottom: none; }
+.criteria-check { width: 22px; height: 22px; border-radius: 50%; background: var(--orange-dim); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; font-size: 11px; color: var(--orange); }
+.criteria-text { font-size: 15px; color: var(--w80); line-height: 1.6; }
+.candidacy-quote-block { background: var(--dark3); border: 1px solid var(--border); border-radius: 2px; padding: 36px; }
+.candidacy-quote { font-family: 'Ultra', serif; font-size: 20px; line-height: 1.55; color: var(--white); margin-bottom: 20px; font-weight: 400; }
+.candidacy-quote em { color: var(--orange); font-style: normal; }
+.candidacy-attribution { font-size: 12px; color: var(--w50); letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ── CTA ── */
+#cta { background: var(--dark); max-width: 100%; border-top: 1px solid var(--border); padding: 0; }
+#cta > div { max-width: 1100px; margin: 0 auto; padding: 80px 48px; }
+.cta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 48px; }
+.cta-card { background: var(--dark3); border: 1px solid var(--w10); border-radius: 2px; padding: 28px; display: flex; flex-direction: column; transition: border-color 0.25s; }
+.cta-card:hover { border-color: var(--border); }
+.cta-number { font-family: var(--mono); font-size: 11px; color: var(--orange); opacity: 0.6; margin-bottom: 12px; }
+.cta-card-title { font-size: 17px; margin-bottom: 12px; color: var(--white); line-height: 1.3; }
+.cta-card-body { font-size: 14px; color: var(--w80); line-height: 1.65; flex: 1; margin-bottom: 24px; }
+.cta-divider { height: 1px; background: var(--w10); margin-bottom: 20px; }
+.cta-action-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px; }
+.cta-action-text { font-size: 13px; color: var(--w80); line-height: 1.55; font-style: italic; }
+.cta-action-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--orange); font-size: 13px; padding: 10px 0; border: none; cursor: pointer; font-family: 'Questrial', sans-serif; transition: gap 0.2s; margin-top: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
+.cta-action-btn:hover { gap: 12px; }
+
+/* ── FOOTER ── */
+footer { background: var(--black); border-top: 1px solid var(--w10); padding: 40px 48px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
+.footer-logo { font-family: 'Ultra', serif; font-size: 16px; color: var(--white); }
+.footer-logo span { color: var(--orange); }
+.footer-meta { font-size: 12px; color: var(--w50); }
+.footer-tag { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--orange); }
+.footer-tag::before { content: ''; width: 6px; height: 6px; background: var(--orange); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+
+/* ── MODAL ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12,12,12,0.92); backdrop-filter: blur(12px); z-index: 1000; align-items: center; justify-content: center; padding: 40px; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--dark3); border: 1px solid var(--border); border-radius: 2px; padding: 48px; max-width: 640px; width: 100%; position: relative; }
+.modal-close { position: absolute; top: 20px; right: 20px; width: 32px; height: 32px; background: var(--w06); border: 1px solid var(--w10); border-radius: 50%; color: var(--w50); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.modal-close:hover { background: var(--w10); color: var(--white); }
+.modal-eyebrow { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 16px; }
+.modal-title { font-family: 'Ultra', serif; font-size: 26px; line-height: 1.2; margin-bottom: 20px; font-weight: 400; }
+.modal-body { font-size: 15px; color: var(--w80); line-height: 1.75; margin-bottom: 28px; }
+.modal-checklist { list-style: none; margin-bottom: 28px; }
+.modal-checklist li { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--w06); font-size: 14px; color: var(--w80); line-height: 1.5; }
+.modal-checklist li::before { content: '→'; color: var(--orange); flex-shrink: 0; }
+.modal-actions { display: flex; gap: 12px; }
+
+/* ── UTILITIES ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  section { padding: 60px 24px; }
+  .signal-strip { grid-template-columns: 1fr 1fr; }
+  .signal-item { padding: 16px; border-right: none; border-bottom: 1px solid var(--w10); }
+  .signal-item:last-child { border-bottom: none; }
+  .summary-grid, .chart-grid, .candidacy-grid, .cta-grid { grid-template-columns: 1fr; }
+  .profiles-grid { grid-template-columns: 1fr 1fr; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<nav>
+  <div class="nav-logo">Sassy<span>.</span></div>
+  <div class="nav-meta">
+    <a onclick="scrollTo('summary')" class="active">Overview</a>
+    <a onclick="scrollTo('insights')">Insights</a>
+    <a onclick="scrollTo('data')">Data</a>
+    <a onclick="scrollTo('profiles')">Profiles</a>
+    <a onclick="scrollTo('cta')">Actions</a>
+    <div class="nav-pill" onclick="openModal('briefing')">Strategic Briefing →</div>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eyebrow">
+    <div class="hero-eyebrow-line"></div>
+    <span class="hero-eyebrow-text">Customer Intelligence Report · SaaS Retention</span>
+  </div>
+  <h1 class="hero-title">
+    Churn risk in B2B SaaS.<br>
+    <em>The silent signals</em><br>
+    before the cancellation.
+  </h1>
+  <p class="hero-subtitle">
+    What customers at risk of churning say — and do — in the weeks before they leave. Patterns from 312 accounts across 18 months of longitudinal engagement data.
+  </p>
+  <div class="hero-meta-row">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Accounts analysed</span>
+      <span class="hero-meta-value">312 accounts</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Sessions reviewed</span>
+      <span class="hero-meta-value">~48,000</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Platform</span>
+      <span class="hero-meta-value">Orbit Analytics</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Segment</span>
+      <span class="hero-meta-value">Mid-market B2B</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Date</span>
+      <span class="hero-meta-value">April 2026</span>
+    </div>
+  </div>
+
+  <div style="margin-top: 56px;">
+    <div class="signal-strip">
+      <div class="signal-item">
+        <div class="signal-number">312</div>
+        <div class="signal-label">Accounts in the dataset</div>
+        <div class="signal-dot">Live cohort</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-number">68<sup>%</sup></div>
+        <div class="signal-label">Showed at least one pre-churn signal before cancelling</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-number">23</div>
+        <div class="signal-label">Days — average lead time before churn where signals appear</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-number">#1</div>
+        <div class="signal-label">Predictor: session frequency drop — more than login count</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUMMARY -->
+<div id="summary">
+  <div>
+    <div class="fade-in">
+      <div class="section-eyebrow">
+        <div class="section-eyebrow-line"></div>
+        <span class="section-eyebrow-text">Summary Profile</span>
+      </div>
+      <h2 class="section-title">The at-risk account<br><em>before it's too late</em></h2>
+      <p class="section-intro">Across 312 accounts, a distinct pre-churn profile emerges — not the noisiest accounts, but the quietly disengaging ones, reducing scope without saying a word.</p>
+    </div>
+
+    <div class="summary-grid fade-in">
+      <div class="summary-profile">
+        <div class="summary-profile-title">Defining characteristics</div>
+        <div class="profile-trait">
+          <div class="trait-icon"></div>
+          <span class="trait-text">Session frequency drops <strong>before</strong> session depth — they log in less before they use less</span>
+        </div>
+        <div class="profile-trait">
+          <div class="trait-icon"></div>
+          <span class="trait-text">Champion contact goes quiet — <strong>usage migrates to junior users</strong> or stops entirely</span>
+        </div>
+        <div class="profile-trait">
+          <div class="trait-icon"></div>
+          <span class="trait-text">Support tickets decrease — not because things are fine, but because <strong>they've stopped trying to fix it</strong></span>
+        </div>
+        <div class="profile-trait">
+          <div class="trait-icon"></div>
+          <span class="trait-text">Dashboard views plateau — they check the same reports on repeat, <strong>no new exploration</strong></span>
+        </div>
+        <div class="profile-trait">
+          <div class="trait-icon"></div>
+          <span class="trait-text">NPS scores are neutral, not negative — <strong>the danger zone is 7s, not 4s</strong></span>
+        </div>
+      </div>
+
+      <div>
+        <div class="summary-profile" style="margin-bottom: 20px;">
+          <div class="summary-profile-title">What these accounts don't do</div>
+          <div class="profile-trait">
+            <div class="trait-icon" style="background: rgba(255,180,80,0.6)"></div>
+            <span class="trait-text">They don't complain loudly — silence is the signal</span>
+          </div>
+          <div class="profile-trait">
+            <div class="trait-icon" style="background: rgba(255,180,80,0.6)"></div>
+            <span class="trait-text">They don't engage with new feature releases or product updates</span>
+          </div>
+          <div class="profile-trait">
+            <div class="trait-icon" style="background: rgba(255,180,80,0.6)"></div>
+            <span class="trait-text">They don't bring in new team members — seat count stagnates or shrinks</span>
+          </div>
+        </div>
+        <div style="background: var(--dark3); border: 1px solid var(--border); border-radius: 2px; padding: 20px 24px; cursor: pointer;" onclick="openModal('briefing')">
+          <div style="font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px;">Briefing note for CS leadership</div>
+          <div style="font-size: 14px; color: var(--w80); line-height: 1.6; margin-bottom: 12px;">The commercial opportunity is not in rescuing churned accounts — it is in detecting the 23-day window before the decision is made.</div>
+          <div style="font-size: 13px; color: var(--orange); display: flex; align-items: center; gap: 6px;">Open briefing →</div>
+        </div>
+      </div>
+
+      <div class="summary-closer">
+        <p>
+          For the accounts most at risk, the intervention window is not the renewal conversation.<br>
+          It is the moment <strong>session frequency first drops — three to four weeks before anyone notices.</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INSIGHTS -->
+<section id="insights">
+  <div class="fade-in">
+    <div class="section-eyebrow">
+      <div class="section-eyebrow-line"></div>
+      <span class="section-eyebrow-text">6 Key Insights</span>
+    </div>
+    <h2 class="section-title">What the data<br><em>actually reveals</em></h2>
+    <p class="section-intro">Each insight is grounded in account behaviour patterns across 18 months. Click to expand, explore, and see recommended actions for the CS and product teams.</p>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab(event,'all')">All Insights</button>
+    <button class="tab-btn" onclick="switchTab(event,'engagement')">Engagement</button>
+    <button class="tab-btn" onclick="switchTab(event,'expansion')">Expansion</button>
+    <button class="tab-btn" onclick="switchTab(event,'recovery')">Recovery</button>
+  </div>
+
+  <div id="tab-all" class="tab-panel active">
+
+    <div class="insight-card fade-in" onclick="toggleCard(this)">
+      <div class="insight-card-header">
+        <div class="insight-card-left">
+          <span class="insight-number">01</span>
+          <div class="insight-card-title">Churn isn't a decision — it's a drift. And it starts weeks before anyone says anything.</div>
+        </div>
+        <div class="insight-toggle">+</div>
+      </div>
+      <div class="insight-card-body">
+        <p class="insight-body-text">The most consistent pre-churn signal is not a support ticket, a complaint, or a missed renewal call. It is a gradual reduction in the frequency of logins — starting an average of 23 days before the cancellation request. These accounts don't decide to leave. They slowly stop arriving.</p>
+        <div class="customer-quote">"We just kind of stopped using it as much. No one made a decision. It just fell off."<span class="customer-quote-id">— Account A-112, post-churn interview</span></div>
+        <div class="customer-quote">"By the time our renewal came up, nobody on the team was really in there daily anymore. It was easy to say no."<span class="customer-quote-id">— Account A-287, exit survey</span></div>
+        <div class="insight-reveals">
+          <div class="reveals-label">What this reveals</div>
+          <p class="reveals-text">Churn is a lagging event. The causal behaviour — disengagement — starts much earlier and is detectable in usage data. A session frequency trigger at day 7 of decline would give CS a 16-day intervention window before the typical cancellation request.</p>
+        </div>
+        <div class="action-block">
+          <div class="action-icon">↗</div>
+          <div>
+            <div class="action-label">Recommended Action</div>
+            <div class="action-title">Build a session frequency alert into the CS health score model</div>
+            <p class="action-text">The current health score uses NPS and support volume. Neither catches the drift pattern. A 7-day rolling session frequency metric — triggering at a 30% decline — would surface at-risk accounts weeks earlier than the current model.</p>
+            <button class="action-btn" onclick="event.stopPropagation(); openModal('healthscore')">Build health score model →</button>
+            <button class="action-btn-ghost" onclick="event.stopPropagation()">Flag for product</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-card fade-in" onclick="toggleCard(this)">
+      <div class="insight-card-header">
+        <div class="insight-card-left">
+          <span class="insight-number">02</span>
+          <div class="insight-card-title">Champion silence is the loudest signal. When the buyer stops logging in, the account is at risk.</div>
+        </div>
+        <div class="insight-toggle">+</div>
+      </div>
+      <div class="insight-card-body">
+        <p class="insight-body-text">In 71% of churned accounts, the primary champion — the person who bought the product — had not logged in for at least 14 days before the cancellation request. Usage had migrated to junior team members or stopped entirely. The product had lost its internal advocate before the renewal conversation began.</p>
+        <div class="customer-quote">"I'd moved roles internally and hadn't used it in a few months. When renewal came up, nobody was there to make the case for keeping it."<span class="customer-quote-id">— Account A-044, exit survey</span></div>
+        <div class="insight-reveals">
+          <div class="reveals-label">What this reveals</div>
+          <p class="reveals-text">Champion engagement is a leading indicator, not just a relationship metric. When the person with budget authority disengages, the renewal is at risk regardless of team-level usage. Tracking champion-specific session data separately from account-level data would surface this signal weeks earlier.</p>
+        </div>
+        <div class="action-block">
+          <div class="action-icon">↗</div>
+          <div>
+            <div class="action-label">Recommended Action</div>
+            <div class="action-title">Tag champion users in the system and track their activity independently</div>
+            <p class="action-text">Champion dormancy (14+ days without login) should trigger an automatic CS touchpoint — not a renewal conversation, but a value demonstration. A personalised insight or new feature highlight, timed to re-engage the decision-maker before the renewal window.</p>
+            <button class="action-btn" onclick="event.stopPropagation(); openModal('champion')">See champion playbook →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-card fade-in" onclick="toggleCard(this)">
+      <div class="insight-card-header">
+        <div class="insight-card-left">
+          <span class="insight-number">03</span>
+          <div class="insight-card-title">Neutral NPS scores are more dangerous than negative ones. The 7s don't complain — they just don't renew.</div>
+        </div>
+        <div class="insight-toggle">+</div>
+      </div>
+      <div class="insight-card-body">
+        <p class="insight-body-text">Counterintuitively, accounts that gave NPS scores of 6–7 churned at a higher rate (34%) than accounts giving 4–5 (28%). The dissatisfied accounts escalated, received intervention, and were partially retained. The neutral accounts didn't raise their hand — and were not prioritised for outreach.</p>
+        <div class="customer-quote">"It was fine. Not amazing. We just found something that worked better for us."<span class="customer-quote-id">— Account A-198, exit survey</span></div>
+        <div class="insight-reveals">
+          <div class="reveals-label">What this reveals</div>
+          <p class="reveals-text">The NPS passive zone (7s) represents the highest-volume churn risk and the lowest intervention rate. These accounts are not asking for help — but they are reachable with proactive value communication. A segment-specific outreach strategy for NPS 6–7 accounts could reduce churn in this cohort by an estimated 15–20%.</p>
+        </div>
+        <div class="action-block">
+          <div class="action-icon">↗</div>
+          <div>
+            <div class="action-label">Recommended Action</div>
+            <div class="action-title">Create a dedicated intervention track for NPS 6–7 accounts</div>
+            <p class="action-text">These accounts need a different playbook than detractors. Not escalation — inspiration. A curated "accounts like yours are doing this" use case sequence, delivered by CS over 60 days, has proven effective at converting passive users into active advocates.</p>
+            <button class="action-btn" onclick="event.stopPropagation(); openModal('npstrack')">See NPS intervention track →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-card fade-in" onclick="toggleCard(this)">
+      <div class="insight-card-header">
+        <div class="insight-card-left">
+          <span class="insight-number">04</span>
+          <div class="insight-card-title">Accounts that stop exploring the product stop growing — and eventually stop renewing.</div>
+        </div>
+        <div class="insight-toggle">+</div>
+      </div>
+      <div class="insight-card-body">
+        <p class="insight-body-text">Pre-churn accounts show a consistent pattern: their dashboard views plateau at 3–4 saved reports, with no new explorations in the 30 days before cancellation. They have found what works for them — but have not discovered new value. The product is useful, but not irreplaceable.</p>
+        <div class="customer-quote">"We basically use it for two things. It does those well enough, but we didn't really figure out what else it could do."<span class="customer-quote-id">— Account A-156, post-churn interview</span></div>
+        <div class="insight-reveals">
+          <div class="reveals-label">What this reveals</div>
+          <p class="reveals-text">Stickiness is correlated with breadth of use, not depth in a single workflow. Accounts using 4+ feature areas churn at 9% vs 31% for accounts using 1–2 areas. Expanding the number of workflows an account uses should be treated as a retention strategy, not just a growth strategy.</p>
+        </div>
+        <div class="action-block">
+          <div class="action-icon">↗</div>
+          <div>
+            <div class="action-label">Recommended Action</div>
+            <div class="action-title">Build a feature adoption score into QBR frameworks</div>
+            <p class="action-text">Accounts with a feature adoption score below 3 active areas should receive a structured discovery session from CS at the 90-day mark. Not a sales conversation — a workflow expansion conversation, led by use cases from similar accounts.</p>
+            <button class="action-btn" onclick="event.stopPropagation()">Request QBR template →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-card fade-in" onclick="toggleCard(this)">
+      <div class="insight-card-header">
+        <div class="insight-card-left">
+          <span class="insight-number">05</span>
+          <div class="insight-card-title">The accounts that expand are the ones that were onboarded to outcomes, not features.</div>
+        </div>
+        <div class="insight-toggle">+</div>
+      </div>
+      <div class="insight-card-body">
+        <p class="insight-body-text">Accounts that expanded seats or added modules in year 1 share a distinct onboarding characteristic: their first 30-day usage pattern was tied to a specific business outcome — a report they needed to send, a decision they needed to make — rather than a feature tour. Outcome-anchored onboarding correlated with 3.4× higher expansion rates.</p>
+        <div class="customer-quote">"The onboarding was actually useful because they helped us build the specific dashboard we needed for our Monday morning meeting. That became the anchor point for everything else."<span class="customer-quote-id">— Account A-019, retained and expanded 2×</span></div>
+        <div class="insight-reveals">
+          <div class="reveals-label">What this reveals</div>
+          <p class="reveals-text">Account A-019 is the expansion archetype in this dataset. When onboarding is anchored to a real business outcome — not a feature checklist — the account develops an internal use case they own. That ownership drives advocacy, expansion, and retention.</p>
+        </div>
+        <div class="action-block">
+          <div class="action-icon">↗</div>
+          <div>
+            <div class="action-label">Recommended Action</div>
+            <div class="action-title">Redesign onboarding around outcome anchors, not feature checklists</div>
+            <p class="action-text">The first CS session should identify one specific business output the account needs — a board report, a weekly ops meeting, a pipeline review — and build the first Orbit configuration around it. Feature adoption follows naturally from an outcome anchor.</p>
+            <button class="action-btn" onclick="event.stopPropagation(); openModal('onboarding')">See onboarding redesign →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-card fade-in" onclick="toggleCard(this)">
+      <div class="insight-card-header">
+        <div class="insight-card-left">
+          <span class="insight-number">06</span>
+          <div class="insight-card-title">Churn is a multiplier. When one signal appears, the others follow — and the window closes fast.</div>
+        </div>
+        <div class="insight-toggle">+</div>
+      </div>
+      <div class="insight-card-body">
+        <p class="insight-body-text">In 84% of churned accounts, multiple risk signals co-occurred — champion dormancy, session frequency decline, and feature exploration plateau all appearing within a 10-day window. Once the pattern clusters, average time to cancellation is 16 days. After 3 co-occurring signals, successful retention drops to 12%.</p>
+        <div class="customer-quote">"Looking back, all the signs were there. We just weren't looking at them together."<span class="customer-quote-id">— CSM retrospective, Q3 2025</span></div>
+        <div class="insight-reveals">
+          <div class="reveals-label">What this reveals</div>
+          <p class="reveals-text">The signals are individually weak but collectively diagnostic. A composite risk score — weighting all six signals together — would identify at-risk accounts 3 weeks earlier than the current model, with significantly higher precision. The investment in building this model pays back in the first quarter of deployment.</p>
+        </div>
+        <div class="action-block">
+          <div class="action-icon">↗</div>
+          <div>
+            <div class="action-label">Recommended Action</div>
+            <div class="action-title">Build a composite churn risk score and automate CS alerts</div>
+            <p class="action-text">Combine session frequency, champion activity, feature breadth, NPS band, support volume, and seat growth into a single weekly risk score per account. Automate CS alerts at threshold crossings. The model should be built on this dataset and retrained quarterly.</p>
+            <button class="action-btn" onclick="event.stopPropagation(); openModal('riskscore')">See risk model spec →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="tab-engagement" class="tab-panel">
+    <div style="font-size: 14px; color: var(--w80); background: var(--dark3); border: 1px solid var(--w10); border-radius: 2px; padding: 24px;">Use the "All Insights" tab to explore all 6 findings — engagement filter coming in next iteration.</div>
+  </div>
+  <div id="tab-expansion" class="tab-panel">
+    <div style="font-size: 14px; color: var(--w80); background: var(--dark3); border: 1px solid var(--w10); border-radius: 2px; padding: 24px;">Use the "All Insights" tab to explore all 6 findings — expansion filter coming in next iteration.</div>
+  </div>
+  <div id="tab-recovery" class="tab-panel">
+    <div style="font-size: 14px; color: var(--w80); background: var(--dark3); border: 1px solid var(--w10); border-radius: 2px; padding: 24px;">Use the "All Insights" tab to explore all 6 findings — recovery filter coming in next iteration.</div>
+  </div>
+</section>
+
+<!-- DATA -->
+<div id="data">
+  <div>
+    <div class="fade-in">
+      <div class="section-eyebrow">
+        <div class="section-eyebrow-line"></div>
+        <span class="section-eyebrow-text">Signal Data</span>
+      </div>
+      <h2 class="section-title">The numbers<br><em>behind the story</em></h2>
+    </div>
+
+    <div class="chart-grid">
+
+      <div class="chart-card fade-in">
+        <div class="chart-card-title">Pre-Churn Signal Frequency (312 churned accounts)</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <span class="bar-label">Session drop</span>
+            <div class="bar-track"><div class="bar-fill" data-width="100"></div></div>
+            <span class="bar-value">84%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Champion quiet</span>
+            <div class="bar-track"><div class="bar-fill" data-width="85" style="background:rgba(255,140,60,0.8)"></div></div>
+            <span class="bar-value" style="color:rgba(255,140,60,0.9)">71%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">No exploration</span>
+            <div class="bar-track"><div class="bar-fill" data-width="72" style="background:rgba(255,160,80,0.7)"></div></div>
+            <span class="bar-value" style="color:rgba(255,160,80,0.9)">61%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">NPS 6–7</span>
+            <div class="bar-track"><div class="bar-fill" data-width="61" style="background:rgba(255,180,80,0.6)"></div></div>
+            <span class="bar-value" style="color:rgba(255,180,80,0.9)">51%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label">Seat stagnation</span>
+            <div class="bar-track"><div class="bar-fill" data-width="52" style="background:rgba(255,200,80,0.5)"></div></div>
+            <span class="bar-value" style="color:rgba(255,200,80,0.8)">44%</span>
+          </div>
+        </div>
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--w06);">
+          <p style="font-size: 13px; color: var(--w50); line-height: 1.6;">Session frequency decline is the most consistent predictor — appearing in 84% of churned accounts, an average of 23 days before cancellation.</p>
+        </div>
+      </div>
+
+      <div class="chart-card fade-in">
+        <div class="chart-card-title">Churn Rate by Feature Adoption Breadth</div>
+        <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 24px;">
+          <div style="position: relative; width: 100px; height: 100px; flex-shrink: 0;">
+            <svg viewBox="0 0 36 36" style="width: 100px; height: 100px; transform: rotate(-90deg);">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--orange)" stroke-width="3"
+                stroke-dasharray="0 100" id="donut-arc" stroke-linecap="round"
+                style="transition: stroke-dasharray 1.5s cubic-bezier(0.16,1,0.3,1)"/>
+            </svg>
+            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+              <span style="font-family: 'Ultra', serif; font-size: 20px; color: var(--white); font-weight: 400;">9%</span>
+              <span style="font-size: 10px; color: var(--w50); margin-top: 2px;">churn</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-family: 'Ultra', serif; font-size: 34px; color: var(--orange); line-height: 1; font-weight: 400;">4+ features</div>
+            <div style="font-size: 14px; color: var(--w80); margin-top: 4px; line-height: 1.5;">Accounts using 4+ feature areas churn at just 9% vs 31% for 1–2 areas</div>
+          </div>
+        </div>
+        <div style="font-size: 13px; color: var(--w50); line-height: 1.6; border-top: 1px solid var(--w06); padding-top: 16px;">
+          Breadth of feature adoption is the strongest structural predictor of retention — more than team size, industry, or contract length.
+        </div>
+      </div>
+
+      <div class="chart-card fade-in">
+        <div class="chart-card-title">Churn Signal Timeline (composite)</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">Day 1–7</div>
+            <div class="timeline-text">Session frequency begins declining. Champion login frequency drops first. Typically unnoticed by CS.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Day 7–14</div>
+            <div class="timeline-text">Feature exploration stops. Account uses the same 2–3 reports on repeat. No new dashboards created.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Day 14–20</div>
+            <div class="timeline-text">Champion goes fully dormant. Usage migrates to junior users or drops below team threshold. Support tickets stop.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-time">Day 20–23</div>
+            <div class="timeline-text">Cancellation request submitted. By this point, successful retention rate is below 12%.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card fade-in">
+        <div class="chart-card-title">High-Risk Accounts — Signal Clustering</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <span class="bar-label" style="font-family: var(--mono); font-size: 12px; color: var(--orange);">3 signals</span>
+            <div class="bar-track"><div class="bar-fill" data-width="88" style="background: rgba(255,80,80,0.75)"></div></div>
+            <span class="bar-value" style="color: rgba(255,80,80,0.9); font-size: 11px;">88%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="font-family: var(--mono); font-size: 12px; color: var(--orange);">2 signals</span>
+            <div class="bar-track"><div class="bar-fill" data-width="63" style="background: rgba(255,120,60,0.75)"></div></div>
+            <span class="bar-value" style="color: rgba(255,120,60,0.9); font-size: 11px;">63%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="font-family: var(--mono); font-size: 12px; color: var(--orange);">1 signal</span>
+            <div class="bar-track"><div class="bar-fill" data-width="41" style="background: rgba(255,160,80,0.75)"></div></div>
+            <span class="bar-value" style="color: rgba(255,160,80,0.9); font-size: 11px;">41%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-label" style="font-family: var(--mono); font-size: 12px; color: var(--orange);">0 signals</span>
+            <div class="bar-track"><div class="bar-fill" data-width="9" style="background: rgba(100,200,150,0.6)"></div></div>
+            <span class="bar-value" style="color: rgba(100,200,150,0.8); font-size: 11px;">9%</span>
+          </div>
+        </div>
+        <p style="font-size: 12px; color: var(--w50); margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--w06);">Churn rate by number of co-occurring risk signals — showing the compounding effect of signal clustering</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- PROFILES -->
+<div id="profiles">
+  <div>
+    <div class="fade-in">
+      <div class="section-eyebrow">
+        <div class="section-eyebrow-line"></div>
+        <span class="section-eyebrow-text">Account Archetypes</span>
+      </div>
+      <h2 class="section-title">Six account archetypes<br><em>across the churn risk spectrum</em></h2>
+      <p class="section-intro">Click a profile to understand the archetype in depth. These are composite portraits drawn from behaviour patterns, not individual accounts.</p>
+    </div>
+
+    <div class="profiles-grid fade-in">
+      <div class="profile-card highlight" onclick="openModal('profile-a1')">
+        <div class="profile-id">ARCHETYPE 01 — A-112 pattern</div>
+        <div class="profile-archetype">The Silent Drifter</div>
+        <div class="profile-tags">
+          <span class="tag orange">Session drop</span>
+          <span class="tag">No complaints</span>
+          <span class="tag">NPS: 7</span>
+        </div>
+        <div style="font-size: 13px; color: var(--w80); line-height: 1.6; margin-bottom: 16px;">"We just kind of stopped using it." No incident, no escalation — gradual disengagement with no visible trigger.</div>
+        <div class="profile-energy-bar">
+          <div class="profile-energy-label"><span>Churn risk</span><span style="color: rgba(255,80,80,0.9)">Critical</span></div>
+          <div class="profile-energy-track"><div class="profile-energy-fill" data-width="91" style="background: rgba(255,80,80,0.7); width: 0%"></div></div>
+        </div>
+      </div>
+
+      <div class="profile-card" onclick="openModal('profile-a2')">
+        <div class="profile-id">ARCHETYPE 02 — A-044 pattern</div>
+        <div class="profile-archetype">The Abandoned Champion</div>
+        <div class="profile-tags">
+          <span class="tag orange">Champion dormant</span>
+          <span class="tag warm">Role change</span>
+          <span class="tag">No advocate</span>
+        </div>
+        <div style="font-size: 13px; color: var(--w80); line-height: 1.6; margin-bottom: 16px;">Bought and loved the product — then changed roles. Usage migrated to a junior user with no budget authority at renewal.</div>
+        <div class="profile-energy-bar">
+          <div class="profile-energy-label"><span>Churn risk</span><span style="color: rgba(255,140,60,0.9)">High</span></div>
+          <div class="profile-energy-track"><div class="profile-energy-fill" data-width="74" style="background: rgba(255,140,60,0.7); width: 0%"></div></div>
+        </div>
+      </div>
+
+      <div class="profile-card" onclick="openModal('profile-a3')">
+        <div class="profile-id">ARCHETYPE 03 — A-198 pattern</div>
+        <div class="profile-archetype">The Passive 7</div>
+        <div class="profile-tags">
+          <span class="tag orange">NPS: 7</span>
+          <span class="tag">Satisfied-ish</span>
+          <span class="tag warm">No expansion</span>
+        </div>
+        <div style="font-size: 13px; color: var(--w80); line-height: 1.6; margin-bottom: 16px;">"It was fine." Not a detractor — just not invested enough to fight for renewal when a competitor offered a demo.</div>
+        <div class="profile-energy-bar">
+          <div class="profile-energy-label"><span>Churn risk</span><span style="color: rgba(255,160,80,0.9)">Medium-High</span></div>
+          <div class="profile-energy-track"><div class="profile-energy-fill" data-width="60" style="background: rgba(255,160,80,0.7); width: 0%"></div></div>
+        </div>
+      </div>
+
+      <div class="profile-card" onclick="openModal('profile-a4')">
+        <div class="profile-id">ARCHETYPE 04 — A-019 pattern</div>
+        <div class="profile-archetype">The Outcome Anchor</div>
+        <div class="profile-tags">
+          <span class="tag orange">Expanded 2×</span>
+          <span class="tag">Outcome-onboarded</span>
+        </div>
+        <div style="font-size: 13px; color: var(--w80); line-height: 1.6; margin-bottom: 16px;">"The onboarding built the dashboard we actually needed." Onboarded to a specific business outcome — became the internal advocate and expanded twice.</div>
+        <div class="profile-energy-bar">
+          <div class="profile-energy-label"><span>Churn risk</span><span style="color: var(--orange)">Minimal</span></div>
+          <div class="profile-energy-track"><div class="profile-energy-fill" data-width="12" style="background: var(--orange); width: 0%"></div></div>
+        </div>
+      </div>
+
+      <div class="profile-card" onclick="openModal('profile-a5')">
+        <div class="profile-id">ARCHETYPE 05 — A-156 pattern</div>
+        <div class="profile-archetype">The Feature Plateau</div>
+        <div class="profile-tags">
+          <span class="tag">Uses 2 features</span>
+          <span class="tag warm">No exploration</span>
+          <span class="tag orange">Underutilised</span>
+        </div>
+        <div style="font-size: 13px; color: var(--w80); line-height: 1.6; margin-bottom: 16px;">"We basically use it for two things." Adequate use case, no expansion. At risk when a point solution for those two use cases emerges.</div>
+        <div class="profile-energy-bar">
+          <div class="profile-energy-label"><span>Churn risk</span><span style="color: rgba(255,180,80,0.9)">Elevated</span></div>
+          <div class="profile-energy-track"><div class="profile-energy-fill" data-width="48" style="background: rgba(255,180,80,0.7); width: 0%"></div></div>
+        </div>
+      </div>
+
+      <div class="profile-card" onclick="openModal('profile-a6')">
+        <div class="profile-id">ARCHETYPE 06 — A-287 pattern</div>
+        <div class="profile-archetype">The Renewal Default</div>
+        <div class="profile-tags">
+          <span class="tag warm">Low sessions</span>
+          <span class="tag warm">Easy no</span>
+          <span class="tag orange">Renewal risk</span>
+        </div>
+        <div style="font-size: 13px; color: var(--w80); line-height: 1.6; margin-bottom: 16px;">"By the time renewal came up, nobody was really in there." Usage had drifted before the renewal conversation — it was an easy cancellation.</div>
+        <div class="profile-energy-bar">
+          <div class="profile-energy-label"><span>Churn risk</span><span style="color: rgba(255,80,80,0.9)">High</span></div>
+          <div class="profile-energy-track"><div class="profile-energy-fill" data-width="82" style="background: rgba(255,80,80,0.7); width: 0%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CANDIDACY -->
+<div id="candidacy">
+  <div>
+    <div class="fade-in">
+      <div class="section-eyebrow">
+        <div class="section-eyebrow-line"></div>
+        <span class="section-eyebrow-text">Intervention Targeting</span>
+      </div>
+      <h2 class="section-title">Who to prioritise —<br>and <em>when to act</em></h2>
+    </div>
+
+    <div class="candidacy-grid fade-in">
+      <div>
+        <p style="font-size: 16px; color: var(--w80); line-height: 1.75; margin-bottom: 32px;">The accounts most likely to be saved by proactive CS intervention share three identifiable characteristics — visible in usage data 3–4 weeks before the renewal window opens.</p>
+        <ul class="criteria-list">
+          <li class="criteria-item">
+            <div class="criteria-check">1</div>
+            <div class="criteria-text"><strong>Session frequency has declined but not collapsed</strong> — still logging in, but less. Intervention at this stage has a 61% success rate.</div>
+          </li>
+          <li class="criteria-item">
+            <div class="criteria-check">2</div>
+            <div class="criteria-text"><strong>Champion is dormant but still employed</strong> — not a role change, just disengaged. A personalised value demonstration reactivates 44% of dormant champions within 7 days.</div>
+          </li>
+          <li class="criteria-item">
+            <div class="criteria-check">3</div>
+            <div class="criteria-text"><strong>Feature adoption is below 3 areas</strong> — not because they've rejected them, but because nobody showed them the use case. Discovery sessions convert 38% to active adopters.</div>
+          </li>
+          <li class="criteria-item">
+            <div class="criteria-check">→</div>
+            <div class="criteria-text" style="font-style: italic; color: var(--w50);">When accounts are successfully retained, they don't describe avoiding cancellation. They describe <strong style="color: var(--w80);">finding new value they didn't know existed.</strong></div>
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="candidacy-quote-block">
+          <div class="candidacy-quote">
+            "The commercial opportunity is not in the renewal conversation. It is in the <em>23-day window before the decision is already made.</em>"
+          </div>
+          <div class="candidacy-attribution">Orbit Customer Intelligence — Churn Risk Signals Report, 2026</div>
+          <div style="margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--w10);">
+            <div style="font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--w50); margin-bottom: 12px;">Signals detectable in usage data</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span class="tag orange">Session frequency decline</span>
+              <span class="tag orange">Champion dormancy</span>
+              <span class="tag orange">Feature breadth below 3</span>
+              <span class="tag orange">NPS 6–7 band</span>
+              <span class="tag orange">No new explorations</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div id="cta">
+  <div>
+    <div class="fade-in">
+      <div class="section-eyebrow">
+        <div class="section-eyebrow-line"></div>
+        <span class="section-eyebrow-text">Recommended Actions</span>
+      </div>
+      <h2 class="section-title">Where to go<br><em>from here</em></h2>
+      <p class="section-intro">Three areas where this data should directly inform CS and product decisions in the next 90 days.</p>
+    </div>
+
+    <div class="cta-grid fade-in">
+      <div class="cta-card">
+        <div class="cta-number">01 — CS OPERATIONS</div>
+        <div class="cta-card-title">Build and deploy a composite churn risk score</div>
+        <p class="cta-card-body">The current health score is a lagging indicator. A composite risk model — combining session frequency, champion activity, feature breadth, NPS band, and support volume — would surface at-risk accounts 3 weeks earlier with significantly higher precision.</p>
+        <div class="cta-divider"></div>
+        <div class="cta-action-label">Action</div>
+        <p class="cta-action-text">Define the model spec using this dataset. Implement in Salesforce or HubSpot with weekly automated alerts. Target a 15% reduction in churn rate within 2 quarters of deployment.</p>
+        <button class="cta-action-btn" onclick="openModal('riskscore')">Build risk score model →</button>
+      </div>
+
+      <div class="cta-card">
+        <div class="cta-number">02 — ONBOARDING</div>
+        <div class="cta-card-title">Redesign onboarding around outcome anchors</div>
+        <p class="cta-card-body">Accounts onboarded to a specific business output — not a feature checklist — show 3.4× higher expansion rates and significantly lower churn. The first CS session should identify one real business output and build Orbit around it.</p>
+        <div class="cta-divider"></div>
+        <div class="cta-action-label">Action</div>
+        <p class="cta-action-text">Develop a structured onboarding discovery framework: identify the specific output the account needs in the first 10 minutes. Pilot with 20 accounts in the next cohort and measure 90-day feature adoption breadth.</p>
+        <button class="cta-action-btn" onclick="openModal('onboarding')">See onboarding framework →</button>
+      </div>
+
+      <div class="cta-card">
+        <div class="cta-number">03 — RETENTION PLAYBOOKS</div>
+        <div class="cta-card-title">Create dedicated intervention tracks for each at-risk archetype</div>
+        <p class="cta-card-body">Each of the six archetypes requires a different response. The Silent Drifter needs a value re-demonstration. The Passive 7 needs peer use cases. The Abandoned Champion needs a new internal advocate. One-size playbooks miss all three.</p>
+        <div class="cta-divider"></div>
+        <div class="cta-action-label">Action</div>
+        <p class="cta-action-text">Build playbook variants for the top 3 archetypes (Silent Drifter, Abandoned Champion, Passive 7). Map each to the detection signal that should trigger it. Automate trigger → playbook assignment via CS platform.</p>
+        <button class="cta-action-btn" onclick="openModal('playbooks')">See archetype playbooks →</button>
+      </div>
+    </div>
+
+    <div style="margin-top: 48px; background: linear-gradient(135deg, rgba(255,84,0,0.08) 0%, rgba(255,84,0,0.02) 100%); border: 1px solid var(--border); border-radius: 2px; padding: 40px 48px; display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap;" class="fade-in">
+      <div>
+        <div style="font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--orange); margin-bottom: 10px;">Continue the intelligence</div>
+        <h3 style="font-family: 'Ultra', serif; font-size: 24px; margin-bottom: 8px; font-weight: 400;">This population is live and growing.</h3>
+        <p style="font-size: 15px; color: var(--w80); line-height: 1.6; max-width: 560px;">The signals in this report are from a real-time, ongoing dataset. The platform continuously monitors account health — which means the model improves every week. Follow-on modules available: expansion signal identification, onboarding success predictors, seat growth patterns.</p>
+      </div>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <button class="action-btn" onclick="openModal('next')">Next module →</button>
+        <button class="action-btn-ghost">Download PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Sassy<span>.</span></div>
+  <div class="footer-meta">Churn Risk Signals · Orbit Customer Intelligence · April 2026 · 312 accounts · ~48,000 sessions</div>
+  <div class="footer-tag">Signals running continuously</div>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-briefing" onclick="closeModal('briefing')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('briefing')">×</button>
+    <div class="modal-eyebrow">Strategic Briefing · Churn Risk</div>
+    <h3 class="modal-title">The 23-day window</h3>
+    <div class="modal-body">The critical finding in this report is not the signals themselves — it is the timing. The average account shows detectable pre-churn behaviour 23 days before cancellation. That window is actionable. Current CS models detect risk at day 19 — leaving only 4 days for intervention, with a success rate below 20%.<br><br>Moving the detection point to day 7–10 would give CS a 13–16 day intervention window, with success rates of 40–60% depending on archetype.</div>
+    <ul class="modal-checklist">
+      <li>Build session frequency monitoring into the health score immediately</li>
+      <li>Tag and track champion users separately from account-level usage</li>
+      <li>Create archetype-specific intervention playbooks — not one-size responses</li>
+      <li>Prioritise onboarding redesign as a structural churn prevention investment</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('briefing')">Got it →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-healthscore" onclick="closeModal('healthscore')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('healthscore')">×</button>
+    <div class="modal-eyebrow">Action · Health Score Model</div>
+    <h3 class="modal-title">Building a composite churn risk score</h3>
+    <div class="modal-body">The current health score weights NPS (40%) and support volume (30%), with contract length as a modifier. Neither NPS nor support volume are leading indicators. The proposed model replaces these with behavioural signals.</div>
+    <ul class="modal-checklist">
+      <li><strong>Session frequency (7-day rolling, 30%):</strong> Decline threshold at -30% triggers amber; -50% triggers red</li>
+      <li><strong>Champion activity (25%):</strong> 14+ days dormancy triggers amber; role change triggers immediate CS alert</li>
+      <li><strong>Feature breadth (20%):</strong> Below 3 active areas flags for discovery session outreach</li>
+      <li><strong>NPS band (15%):</strong> Score of 6–7 routes to passive intervention track, not detractor track</li>
+      <li><strong>Seat growth (10%):</strong> Stagnation or decline over 60 days flags expansion opportunity missed</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('healthscore')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-champion" onclick="closeModal('champion')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('champion')">×</button>
+    <div class="modal-eyebrow">Action · Champion Playbook</div>
+    <h3 class="modal-title">Reactivating dormant champions</h3>
+    <div class="modal-body">Champion dormancy is not the same as account disengagement. In 44% of cases, a single personalised CS touchpoint reactivated a dormant champion within 7 days. The key is personalisation — a generic "checking in" email fails. A specific insight tied to their role and use case succeeds.</div>
+    <ul class="modal-checklist">
+      <li><strong>Trigger:</strong> Champion login gap exceeds 14 days</li>
+      <li><strong>Day 1:</strong> CS sends personalised insight — "Here's what accounts like yours are doing with [feature]"</li>
+      <li><strong>Day 4:</strong> If no response, schedule a 15-min value call — not a renewal conversation</li>
+      <li><strong>Day 7:</strong> If champion confirmed role change, identify new champion and begin enablement</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('champion')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-npstrack" onclick="closeModal('npstrack')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('npstrack')">×</button>
+    <div class="modal-eyebrow">Action · NPS 6–7 Intervention Track</div>
+    <h3 class="modal-title">Converting passives before renewal</h3>
+    <div class="modal-body">The passive zone is the most commercially dangerous NPS band — high volume, low intervention rate, and a churn rate that exceeds detractors. The intervention they need is not issue resolution. It is inspiration.</div>
+    <ul class="modal-checklist">
+      <li>Segment NPS 6–7 accounts into a 60-day peer use case sequence</li>
+      <li>Deliver 3 curated insights: "Accounts like yours use Orbit to [outcome]"</li>
+      <li>Invite to a peer roundtable or customer webinar — social proof at scale</li>
+      <li>Offer a discovery session 30 days before renewal: "Let's find what you're not using yet"</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('npstrack')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-onboarding" onclick="closeModal('onboarding')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('onboarding')">×</button>
+    <div class="modal-eyebrow">Action · Onboarding Redesign</div>
+    <h3 class="modal-title">Outcome-anchored onboarding</h3>
+    <div class="modal-body">The single highest-impact change to retention is in the first 30 days. Accounts onboarded to a specific business output churn at 9% vs 31% for feature-tour onboarding. The redesign is simple — it requires a different first question.</div>
+    <ul class="modal-checklist">
+      <li><strong>New opening question:</strong> "What is the one report or meeting you need Orbit to power in the first 30 days?"</li>
+      <li>Build the first dashboard configuration around that specific output — not a demo template</li>
+      <li>Confirm the output is delivered in the first 2 weeks — this is the "aha moment" anchor</li>
+      <li>Use the anchor to introduce adjacent features: "Now that this is running, here's what else this data can tell you"</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('onboarding')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-riskscore" onclick="closeModal('riskscore')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('riskscore')">×</button>
+    <div class="modal-eyebrow">Action · Risk Score Spec</div>
+    <h3 class="modal-title">Composite churn risk model specification</h3>
+    <div class="modal-body">This model is designed to be built in 4–6 weeks and deployed via the existing CS platform (Salesforce or HubSpot). It requires no new data sources — all inputs are already captured in Orbit's existing telemetry.</div>
+    <ul class="modal-checklist">
+      <li>Define champion user tagging protocol — requires CS to designate 1 champion per account at contract</li>
+      <li>Build 7-day rolling session frequency metric in data warehouse — flag at -30% and -50% thresholds</li>
+      <li>Create feature adoption breadth score — count of distinct feature areas with ≥2 sessions in trailing 30 days</li>
+      <li>Weight and combine into composite score (0–100) with weekly refresh; automate CS alert at score below 40</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('riskscore')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-playbooks" onclick="closeModal('playbooks')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('playbooks')">×</button>
+    <div class="modal-eyebrow">Action · Archetype Playbooks</div>
+    <h3 class="modal-title">Three playbooks for three archetypes</h3>
+    <div class="modal-body">Each at-risk archetype requires a different response. Routing all at-risk accounts to a generic "save" conversation fails the most recoverable accounts — because they don't need saving, they need re-engaging.</div>
+    <ul class="modal-checklist">
+      <li><strong>Silent Drifter:</strong> Value re-demonstration — personalised insight, not a check-in call</li>
+      <li><strong>Abandoned Champion:</strong> New champion identification and 30-day enablement plan</li>
+      <li><strong>Passive 7:</strong> Peer use case sequence — inspiration, not escalation</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('playbooks')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-next" onclick="closeModal('next')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('next')">×</button>
+    <div class="modal-eyebrow">Sassy. Intelligence Modules</div>
+    <h3 class="modal-title">Next available deep-dives</h3>
+    <div class="modal-body">The Orbit account population continues to grow. The following modules can be commissioned using the same dataset, with additional signal segmentation.</div>
+    <ul class="modal-checklist">
+      <li><strong>Expansion Signal Identification</strong> — leading indicators of seat growth and module adoption before the expansion conversation</li>
+      <li><strong>Onboarding Success Predictors</strong> — what the first 30 days of usage predicts for 12-month retention</li>
+      <li><strong>Seat Growth Patterns</strong> — how successful accounts organically expand and what triggers the tipping point</li>
+      <li><strong>Competitive Displacement Signals</strong> — usage patterns that precede a competitive evaluation</li>
+    </ul>
+    <div class="modal-actions">
+      <button class="action-btn" onclick="closeModal('next')">Request modules →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Profile modals -->
+<div class="modal-overlay" id="modal-profile-a1" onclick="closeModal('profile-a1')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('profile-a1')">×</button>
+    <div class="modal-eyebrow">Account Archetype 01</div>
+    <h3 class="modal-title">The Silent Drifter</h3>
+    <div class="modal-body">"We just kind of stopped using it. No one made a decision. It just fell off." — Account A-112. Session frequency declined over 21 days with no incident, no complaint, and no support ticket. NPS of 7 at the most recent survey gave no warning signal in the current model.<br><br>This is the highest-volume churn archetype — and the most preventable. The drift is detectable from day 7 of session decline. At that point, a personalised value demonstration has a 61% success rate.</div>
+    <ul class="modal-checklist">
+      <li>Detection signal: 7-day session frequency decline of 30%+</li>
+      <li>Intervention: Personalised insight tied to their most-used feature — not a renewal conversation</li>
+      <li>Window: Act by day 14 of decline for best outcome</li>
+    </ul>
+    <div class="modal-actions"><button class="action-btn" onclick="closeModal('profile-a1')">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-profile-a4" onclick="closeModal('profile-a4')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('profile-a4')">×</button>
+    <div class="modal-eyebrow">Account Archetype 04</div>
+    <h3 class="modal-title">The Outcome Anchor</h3>
+    <div class="modal-body">"The onboarding was actually useful because they helped us build the specific dashboard we needed for our Monday morning meeting. That became the anchor point for everything else." — Account A-019. Expanded seats twice in year 1. NPS of 9. Refers two accounts per year on average.<br><br>This is the expansion and retention archetype. The differentiating factor is not product or pricing — it is that their onboarding was anchored to a real business output they owned. That ownership created advocacy.</div>
+    <ul class="modal-checklist">
+      <li>Replication strategy: Redesign onboarding discovery to identify the anchor output in the first session</li>
+      <li>Expansion trigger: Once anchor is live, introduce adjacent features with "what else this data can tell you"</li>
+      <li>Advocacy: Accounts onboarded this way refer at 3× the rate of feature-tour onboarded accounts</li>
+    </ul>
+    <div class="modal-actions"><button class="action-btn" onclick="closeModal('profile-a4')">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-profile-a2" onclick="closeModal('profile-a2')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('profile-a2')">×</button>
+    <div class="modal-eyebrow">Account Archetype 02</div>
+    <h3 class="modal-title">The Abandoned Champion</h3>
+    <div class="modal-body">"I'd moved roles internally and hadn't used it in a few months. When renewal came up, nobody was there to make the case for keeping it." — Account A-044. The product had genuine value — it lost its internal advocate, not its relevance.<br><br>Champion role changes are detectable: login patterns shift from the champion account to junior users, or drop entirely. A 14-day champion dormancy alert would have surfaced this account 6 weeks before renewal.</div>
+    <div class="modal-actions"><button class="action-btn" onclick="closeModal('profile-a2')">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-profile-a3" onclick="closeModal('profile-a3')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('profile-a3')">×</button>
+    <div class="modal-eyebrow">Account Archetype 03</div>
+    <h3 class="modal-title">The Passive 7</h3>
+    <div class="modal-body">"It was fine. Not amazing. We just found something that worked better for us." — Account A-198. Gave NPS 7. No complaints. No escalations. Simply not invested enough to resist a competitive conversation at renewal.<br><br>This archetype is the most commercially dangerous because they are the most invisible. They don't ask for help. They don't complain. They just don't renew. The intervention they need is inspiration, not support.</div>
+    <div class="modal-actions"><button class="action-btn" onclick="closeModal('profile-a3')">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-profile-a5" onclick="closeModal('profile-a5')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('profile-a5')">×</button>
+    <div class="modal-eyebrow">Account Archetype 05</div>
+    <h3 class="modal-title">The Feature Plateau</h3>
+    <div class="modal-body">"We basically use it for two things. It does those well enough, but we didn't really figure out what else it could do." — Account A-156. Happy with what they use — but that happiness is brittle. The moment a point solution for those two use cases appears, there is no switching cost.<br><br>Feature breadth below 3 active areas is a structural retention risk. These accounts need a discovery session — not a sales call — to find the third use case that makes them sticky.</div>
+    <div class="modal-actions"><button class="action-btn" onclick="closeModal('profile-a5')">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-profile-a6" onclick="closeModal('profile-a6')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal('profile-a6')">×</button>
+    <div class="modal-eyebrow">Account Archetype 06</div>
+    <h3 class="modal-title">The Renewal Default</h3>
+    <div class="modal-body">"By the time renewal came up, nobody was really in there daily anymore. It was easy to say no." — Account A-287. Usage had drifted long before the renewal conversation. By the time CS called, the internal conversation was already over.<br><br>This archetype is the most common in the dataset (31% of churned accounts). The only intervention that works is pre-empting the renewal with engagement — not starting the conversation at renewal.</div>
+    <div class="modal-actions"><button class="action-btn" onclick="closeModal('profile-a6')">Close</button></div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrollTop = doc.scrollTop || document.body.scrollTop;
+  const scrollHeight = doc.scrollHeight - doc.clientHeight;
+  document.getElementById('progress-bar').style.width = ((scrollTop / scrollHeight) * 100) + '%';
+});
+
+function scrollTo(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.nav-meta a').forEach(a => a.classList.remove('active'));
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(el => {
+    if (el.isIntersecting) {
+      el.target.classList.add('visible');
+      el.target.querySelectorAll('.bar-fill[data-width]').forEach(bar => {
+        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 100);
+      });
+      el.target.querySelectorAll('.profile-energy-fill[data-width]').forEach(bar => {
+        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200);
+      });
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+const donutObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        const arc = document.getElementById('donut-arc');
+        if (arc) arc.style.strokeDasharray = '9 100';
+      }, 300);
+    }
+  });
+}, { threshold: 0.3 });
+const dataSection = document.querySelector('#data');
+if (dataSection) donutObserver.observe(dataSection);
+
+function toggleCard(card) {
+  const wasOpen = card.classList.contains('open');
+  document.querySelectorAll('.insight-card.open').forEach(c => c.classList.remove('open'));
+  if (!wasOpen) card.classList.add('open');
+}
+
+function switchTab(event, name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function openModal(id) {
+  document.getElementById('modal-' + id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    document.body.style.overflow = '';
+  }
+});
+</script>
+</body>
+</html>
